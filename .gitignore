@@ -1,0 +1,50 @@
+# ==============================================================================
+# .gitignore - Proyecto Spotify AI Agent
+# ==============================================================================
+
+# 1. Archivos de Configuración y Credenciales (¡CRÍTICO NO SUBIR!)
+# ------------------------------------------------------------------------------
+.env
+.spotify_cache
+.cache
+*.env.local
+*.env.*.local
+
+# 2. Entornos Virtuales y Herramientas de Dependencias (uv / pip)
+# ------------------------------------------------------------------------------
+.venv/
+venv/
+ENV/
+env/
+.uv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 3. Base de Datos Locales y Archivos de Datos
+# ------------------------------------------------------------------------------
+data/
+*.json
+*.db
+*.sqlite3
+
+# 4. Caché de Python y Compilación
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 5. Archivos del Sistema Operativo o Editores (VS Code, Mac, Windows)
+# ------------------------------------------------------------------------------
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store
