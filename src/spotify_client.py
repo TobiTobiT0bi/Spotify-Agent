@@ -10,13 +10,12 @@ def get_url_metadata(url: str) -> list:
     """
     raw_songs = []
     nombre = ""
-    tipo = ""
     artistas_str = None
 
     url_limpia = url.split("?")[0]
+    es_playlist = "playlist/" in url_limpia
 
     if "album/" in url_limpia:
-        tipo = "Album"
         album_id = url_limpia.split("album/")[-1]
 
         try:
@@ -38,17 +37,16 @@ def get_url_metadata(url: str) -> list:
         artistas_str = ", ".join(artistas_album)
 
     elif "playlist/" in url_limpia:
-        tipo = "Playlist"
         playlist_id = url_limpia.split("playlist/")[-1]
 
         try:   
             playlist_data = sp.playlist(playlist_id)
+            nombre = playlist_data.get('name', 'Playlist desconocida')
+            resultados = playlist_data.get('items', {})
         except Exception as e:
             logger.error(f"No se puede acceder a la playlist. Verifica la URL. Error: {e}")
             return []
-
-        nombre = playlist_data.get('name', 'Playlist desconocida')
-        resultados = playlist_data.get('tracks', {})
+        
         if resultados and 'items' in resultados:
             raw_songs.extend(resultados['items'])
             logger.info(f"🔍 API Spotify: Se recuperaron {len(resultados['items'])} ítems de la página 1.")
@@ -71,12 +69,11 @@ def get_url_metadata(url: str) -> list:
         return []
     
     track_ids = []
-    es_playlist = "playlist/" in url
 
     logger.info("🛠️ Iniciando el análisis y filtrado de canciones...")
     for idx, item in enumerate(raw_songs):
         if es_playlist:
-            track_obj = item.get('track', {})
+            track_obj = item.get('item', {})
             is_local = item.get('is_local', False)
             t_name = track_obj.get('name', 'Sin Nombre') if track_obj else "Objeto Track Vacío"
             t_id = track_obj.get('id') if track_obj else None
@@ -101,7 +98,7 @@ def get_url_metadata(url: str) -> list:
     indice_valido = 0
 
     for item in raw_songs:
-        track = item['track'] if "playlist" in url else item
+        track = item['item'] if es_playlist else item
 
         if not track or not track.get('id') or (es_playlist and item.get('is_local')):
             continue
@@ -111,12 +108,14 @@ def get_url_metadata(url: str) -> list:
 
         artistas_track = [art['name'] for art in track.get('artists', [])]
         artista_final = ", ".join(artistas_track) if artistas_track else artistas_str
+        origen = f"album: {track['album']['name']}" if es_playlist else f"album: {nombre}"
+        
 
         datos_cancion = {
             "id": track['id'],
             "t": track['name'],
             "a": artista_final,
-            "o": f"{tipo}: {nombre}",
+            "o": {origen},
             "b": features.get("tempo"),
             "e": features.get("energy"),
             "v": features.get("valence"),
